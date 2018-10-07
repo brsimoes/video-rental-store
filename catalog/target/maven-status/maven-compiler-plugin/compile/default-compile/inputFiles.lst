@@ -1,0 +1,6 @@
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/application/Movie.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/application/CatalogEventHandler.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/application/CatalogService.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/domain/MovieAggregate.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/application/MovieRepository.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/application/dto/Movie.java

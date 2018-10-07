@@ -1,0 +1,6 @@
+/Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/eventhandler/LoggingEventHandler.java
+/Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/init/DBInit.java
+/Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/App.java
+/Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/rest/CatalogController.java
+/Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/rest/RentalController.java
+/Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/configuration/SwaggerConfig.java

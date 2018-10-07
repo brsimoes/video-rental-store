@@ -1,0 +1,5 @@
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/application/CatalogService.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/domain/MovieAggregate.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/application/dto/Movie.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/domain/exception/UnavailableCopiesForRentException.java
+/Users/bruno/projects/video-rental-store/catalog/src/main/java/com/casumo/videorentalstore/catalog/domain/exception/AllCopiesArePresentException.java
