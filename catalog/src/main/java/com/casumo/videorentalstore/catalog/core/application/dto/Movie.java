@@ -1,11 +1,9 @@
-package com.casumo.videorentalstore.catalog.core.dto;
+package com.casumo.videorentalstore.catalog.core.application.dto;
 
-import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 
 public class Movie {
 
@@ -13,23 +11,22 @@ public class Movie {
 	private final String name;
 	private final MovieType type;
 	private final int availableCopiesToRent;
-	private final Map<UUID, LocalDate> activeRentalsExpectedEndDate;
+	private final Iterable<UUID> activeRentals;
 
 	public Movie(UUID id, String name, MovieType type, int availableCopiesToRent) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.availableCopiesToRent = availableCopiesToRent;
-		this.activeRentalsExpectedEndDate = Collections.emptyMap();
+		this.activeRentals = Collections.emptyList();
 	}
 	
-	public Movie(UUID id, String name, MovieType type, int availableCopiesToRent,
-			Map<UUID, LocalDate> activeRentalsExpectedEndDate) {
+	public Movie(UUID id, String name, MovieType type, int availableCopiesToRent, Iterable<UUID> activeRentals) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.availableCopiesToRent = availableCopiesToRent;
-		this.activeRentalsExpectedEndDate = activeRentalsExpectedEndDate;
+		this.activeRentals = activeRentals;
 	}
 
 	public UUID getId() {
@@ -48,7 +45,7 @@ public class Movie {
 		return availableCopiesToRent;
 	}
 
-	public Map<UUID, LocalDate> getActiveRentalsExpectedEndDate() {
-		return activeRentalsExpectedEndDate;
+	public Iterable<UUID> getActiveRentals() {
+		return activeRentals;
 	}
 }

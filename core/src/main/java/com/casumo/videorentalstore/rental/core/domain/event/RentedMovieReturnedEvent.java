@@ -8,12 +8,19 @@ public class RentedMovieReturnedEvent extends RentalEvent {
 	private final UUID movieId;
 	private final double surchargeAmmount;
 	private final LocalDate returnDate;
+	private final String movieName;
 
-	public RentedMovieReturnedEvent(UUID rentalId, UUID movieId, double surchargeAmmount, LocalDate returnDate) {
+	public RentedMovieReturnedEvent(
+						UUID rentalId, 
+						UUID movieId,
+						String movieName,
+						double surchargeAmmount, 
+						LocalDate returnDate) {
 		super(rentalId);
 		this.movieId = movieId;
 		this.surchargeAmmount = surchargeAmmount;
 		this.returnDate = returnDate;
+		this.movieName = movieName;
 	}
 
 	public UUID getMovieId() {
@@ -26,5 +33,9 @@ public class RentedMovieReturnedEvent extends RentalEvent {
 
 	public LocalDate getReturnDate() {
 		return returnDate;
+	}
+
+	public String getMovieName() {
+		return movieName;
 	}
 }

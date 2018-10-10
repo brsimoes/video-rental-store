@@ -1,7 +1,8 @@
 package com.casumo.videorentalstore.catalog.core.application;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.stereotype.Component;
@@ -30,15 +31,15 @@ public class CatalogEventHandler {
 									evt.getName(), 
 									evt.getType(), 
 									evt.getMaxAvailableCopiesToRent(), 
-									Collections.emptyMap()));
+									new HashSet<UUID>()));
 	}
 	
 	@EventHandler
 	public void handle(MovieRentedEvent evt) {
 		Optional<MovieEntity> movie = this.repository.findById(evt.getMovieId());
 		if (movie.isPresent()) {
-			movie.get().setAvailableCopiesToRent(evt.getCopiesLastToRent());
-			movie.get().addRental(evt.getRentalId(), evt.getRentalDate().plusDays(evt.getHireDays()));
+			movie.get().setAvailableCopiesToRent(evt.getCopiesLeftToRent());
+			movie.get().addRental(evt.getRentalId());
 		}
 	}
 	

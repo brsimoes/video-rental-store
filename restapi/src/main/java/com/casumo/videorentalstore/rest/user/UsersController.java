@@ -1,65 +1,78 @@
 package com.casumo.videorentalstore.rest.user;
 
-import java.util.Optional;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.http.ResponseEntity.created;
+import static org.springframework.http.ResponseEntity.notFound;
+import static org.springframework.http.ResponseEntity.ok;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.casumo.videorentalstore.user.core.application.dto.User;
 import com.casumo.videorentalstore.user.core.port.UserService;
+import com.google.common.collect.Iterables;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping(value = "/users")
+@RequestMapping(value = "/users", produces = MediaTypes.HAL_JSON_VALUE)
 @Api(value="users", tags="Users", description="Operations to manage users")
 public class UsersController {
 
-	@Autowired
 	private UserService userService;
+	private UserResourceAssembler resourceAssembler;
 
-	@ApiOperation(value="Create a new user.")
-	@SuppressWarnings("rawtypes")
-	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity createUser(@RequestBody @Valid NewUser user, UriComponentsBuilder builder) {
+	public UsersController(UserService userService, UserResourceAssembler resourceAssembler) {
+		this.userService = userService;
+		this.resourceAssembler = resourceAssembler;
+	}
 
-		UUID userId = UUID.randomUUID();
+	@ApiOperation(value="Create a new user.", response = ResponseEntity.class)
+	@PostMapping
+	public ResponseEntity<Resource<User>> createUser(@RequestBody @Valid NewUser newUser)
+			throws URISyntaxException {
 		
-		this.userService.createUser(userId, user.getName());
+		User user = new User (UUID.randomUUID(), newUser.getName());
+		
+		this.userService.createUser(user);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setLocation(builder.path("/v1/users/{userId}").buildAndExpand(userId).toUri());
+		Resource<User> userResource = resourceAssembler.toResource(user);
 
-		return new ResponseEntity<>(null, headers, HttpStatus.CREATED);
+		return created(new URI(userResource.getId().expand().getHref()))
+				.body(userResource);
 	}
 
-	@ApiOperation(value="View a list of available users.", response=Iterable.class)
-	@RequestMapping(method = RequestMethod.GET)
-	public Iterable<User> getAllRentals() {
-		Iterable<User> rentals = this.userService.getAllUsers();
-
-		return rentals;
+	@ApiOperation(value="View a list of available users.", response = ResponseEntity.class)
+	@GetMapping
+	public ResponseEntity<Resources<Resource<User>>> getAllUsers() {
+		return ok(new Resources<Resource<User>>(
+						Iterables.transform(this.userService.getAllUsers(), resourceAssembler::toResource),
+						linkTo(methodOn(UsersController.class).getAllUsers()).withSelfRel()));
 	}
 
-	@ApiOperation(value="Search a user by Id.", response=User.class)
+	@ApiOperation(value="Search a user by Id.", response = ResponseEntity.class)
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public ResponseEntity<User> getUserById(@PathVariable UUID id) {
-		Optional<User> user = this.userService.getUserById(id);
-
-		HttpStatus status = user.isPresent() ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-				
-		return new ResponseEntity<>(user.get(), null, status);
+	public ResponseEntity<Resource<User>> getUserById(@PathVariable UUID id) {
+		return this.userService.getUserById(id)
+							   .map(resourceAssembler::toResource)
+							   .map(ResponseEntity::ok)
+							   .orElse(notFound().build());
 	}
 }

@@ -12,8 +12,7 @@ import org.axonframework.commandhandling.model.AggregateIdentifier;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.spring.stereotype.Aggregate;
 
-import com.casumo.videorentalstore.enums.MovieType;
-import com.casumo.videorentalstore.enums.RentalStatus;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 import com.casumo.videorentalstore.rental.core.domain.command.AddRentedMovieCommand;
 import com.casumo.videorentalstore.rental.core.domain.command.ChangeRentalStatusCommand;
 import com.casumo.videorentalstore.rental.core.domain.command.CreateRentalCommand;
@@ -38,19 +37,30 @@ public class RentalAggregate {
 
 	@CommandHandler
 	public RentalAggregate(CreateRentalCommand command) {
-		apply(new RentalCreatedEvent(command.getRentalId(), command.getUserId(), RentalStatus.OPEN));
+		apply(new RentalCreatedEvent(command.getRentalId(), command.getUserId(), command.getStartDate(), RentalStatus.OPEN));
 	}
 
 	@CommandHandler
 	public void handle(AddRentedMovieCommand command) {
 		apply(new RentedMovieAddedEvent(command.getRentalId(), command.getMovieId(), command.getHireDays(),
-				command.getChargeAmmount(), command.getMovieType()));
+				command.getChargeAmmount(), command.getMovieType(), command.getMovieName()));
 	}
 
 	@CommandHandler
 	public void handle(ReturnRentedMovieCommand command) {
-		apply(new RentedMovieReturnedEvent(command.getRentalId(), command.getMovieId(), command.getSurchargeAmmount(),
-				command.getReturnDate()));
+			RentalItem rental = moviesRented.get(command.getMovieId());
+			
+			if(rental != null) {
+			
+			apply(new RentedMovieReturnedEvent(
+							command.getRentalId(), 
+							command.getMovieId(),
+							rental.movieName,
+							command.getSurchargeAmmount(),
+							command.getReturnDate()));
+			} else {
+				throw new MovieNotRentedException();
+			}
 	}
 	
 	@CommandHandler
@@ -68,8 +78,12 @@ public class RentalAggregate {
 
 	@EventSourcingHandler
 	public void on(RentedMovieAddedEvent event) {
-		RentalItem newItem = new RentalItem(event.getMovieId(), event.getHireDays(), event.getMovieType(),
-				event.getChargeAmmount());
+		RentalItem newItem = new RentalItem(
+									event.getMovieId(),
+									event.getMovieName(),
+									event.getHireDays(), 
+									event.getMovieType(),
+									event.getChargeAmmount());
 		
 		this.moviesRented.put(newItem.movieId, newItem);
 	}
@@ -85,18 +99,31 @@ public class RentalAggregate {
 	public void on(RentalStatusChangedEvent event) {
 		this.rentalStatus = event.getNewStatus();
 	}
+	
+	public class MovieNotRentedException extends RuntimeException {
 
+		private static final long serialVersionUID = -194444633524613856L;
+
+	}
+	
 	private class RentalItem {
 		final UUID movieId;
 		final int hireDays;
 		final MovieType movieType;
 		final double chargeAmmount;
+		final String movieName;
 
-		public RentalItem(UUID movieId, int hireDays, MovieType movieType, double chargeAmmount) {
+		public RentalItem(
+					UUID movieId,
+					String movieName,
+					int hireDays, 
+					MovieType movieType, 
+					double chargeAmmount) {
 			this.movieId = movieId;
 			this.hireDays = hireDays;
 			this.movieType = movieType;
 			this.chargeAmmount = chargeAmmount;
+			this.movieName = movieName;
 		}
 
 		@Override

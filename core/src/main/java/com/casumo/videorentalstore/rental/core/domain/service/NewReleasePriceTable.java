@@ -3,11 +3,11 @@ package com.casumo.videorentalstore.rental.core.domain.service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-public class NewReleasePriceTable extends CasumoPriceTable {
+public class NewReleasePriceTable extends PriceTable {
 
 	@Override
 	public double getRentalChargeAmmount(int hireDays) {
-		return hireDays * CasumoPriceTable.PREMIUM_PRICE;
+		return hireDays * PriceTable.PREMIUM_PRICE;
 	}
 
 	@Override

@@ -6,20 +6,21 @@ import java.util.UUID;
 import javax.persistence.Embeddable;
 
 @Embeddable
-public final class Return {
+public final class ReturnItemDetail {
 	private UUID movieId;
 	private LocalDate returnDate;
 	private double surchargeAmmount;
+	private String movieName;
 
-	protected Return() {
+	protected ReturnItemDetail() {
 		
 	}
 	
-	public Return(UUID movieId, LocalDate returnDate, double surchargeAmmount) {
-		super();
+	public ReturnItemDetail(UUID movieId, LocalDate returnDate, double surchargeAmmount, String movieName) {
 		this.movieId = movieId;
 		this.returnDate = returnDate;
 		this.surchargeAmmount = surchargeAmmount;
+		this.movieName = movieName;
 	}
 
 	public UUID getMovieId() {
@@ -44,5 +45,13 @@ public final class Return {
 
 	public void setSurchargeAmmount(double surchargeAmmount) {
 		this.surchargeAmmount = surchargeAmmount;
+	}
+
+	public String getMovieName() {
+		return movieName;
+	}
+
+	public void setMovieName(String movieName) {
+		this.movieName = movieName;
 	}
 }

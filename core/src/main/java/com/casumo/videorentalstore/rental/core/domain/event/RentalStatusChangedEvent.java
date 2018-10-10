@@ -2,7 +2,7 @@ package com.casumo.videorentalstore.rental.core.domain.event;
 
 import java.util.UUID;
 
-import com.casumo.videorentalstore.enums.RentalStatus;
+import com.casumo.videorentalstore.rental.core.domain.RentalStatus;
 
 public class RentalStatusChangedEvent extends RentalEvent {
 

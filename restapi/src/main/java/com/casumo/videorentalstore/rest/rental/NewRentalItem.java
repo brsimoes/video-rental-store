@@ -1,17 +1,17 @@
-package com.casumo.videorentalstore.rental.core.application.dto;
+package com.casumo.videorentalstore.rest.rental;
 
 import java.util.UUID;
 
-public final class RentalItemRequest {
+public final class NewRentalItem {
 
 	private UUID movieId;
 	private int hireDaysDuration;
 	
-	protected RentalItemRequest () {
+	protected NewRentalItem () {
 		
 	}
 	
-	public RentalItemRequest(UUID movieId, int hireDaysDuration) {
+	public NewRentalItem(UUID movieId, int hireDaysDuration) {
 		this.movieId = movieId;
 		this.hireDaysDuration = hireDaysDuration;
 	}

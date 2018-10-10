@@ -1,4 +1,4 @@
-package com.casumo.videorentalstore.enums;
+package com.casumo.videorentalstore.catalog.core.domain;
 
 public enum MovieType {
 	

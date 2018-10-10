@@ -1,6 +1,6 @@
 package com.casumo.videorentalstore.rental.core.domain;
 
-import java.util.Collections;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -22,6 +22,7 @@ import com.casumo.videorentalstore.rental.core.domain.event.RentalCreatedEvent;
 import com.casumo.videorentalstore.rental.core.domain.service.BillingService;
 import com.casumo.videorentalstore.rental.core.domain.service.UnknownPriceFormulaForMovieTypeException;
 import com.casumo.videorentalstore.user.core.domain.command.AddBonusPointsCommand;
+import com.casumo.videorentalstore.user.core.domain.command.AddUserRentalCommand;
 
 @Saga
 public class RentalManagerSaga {
@@ -29,6 +30,7 @@ public class RentalManagerSaga {
 	
 	private UUID userId;
 	private Map<UUID,Integer> initialHireDaysByMovie;
+	private LocalDate rentalStartDate;
 
 	@Autowired
 	private transient CommandGateway commandGateway;
@@ -40,6 +42,9 @@ public class RentalManagerSaga {
 	public void handle(RentalCreatedEvent event) {
 		this.initialHireDaysByMovie = new HashMap<>();
 		this.userId = event.getUserId();
+		this.rentalStartDate = event.getStartDate();
+		
+		this.commandGateway.send(new AddUserRentalCommand(event.getUserId(), event.getRentalId()));
 		
 		logger.debug("A new rental is in place. Id : {}, UserId: {}", event.getRentalId(), event.getUserId());
 	}
@@ -51,8 +56,13 @@ public class RentalManagerSaga {
 			double movieRentalchargeAmmount = this.billingService.getRentalChargeAmmountFor(event.getMovieType(),
 					event.getHireDays());
 
-			this.commandGateway.send(new AddRentedMovieCommand(event.getRentalId(), event.getMovieId(),
-					event.getHireDays(), movieRentalchargeAmmount, event.getMovieType()));
+			this.commandGateway.send(new AddRentedMovieCommand(
+											event.getRentalId(), 
+											event.getMovieId(), 
+											event.getMovieName(), 
+											event.getMovieType(),
+											event.getHireDays(), 
+											movieRentalchargeAmmount));
 			
 			this.initialHireDaysByMovie.put(event.getMovieId(), event.getHireDays());
 
@@ -75,12 +85,12 @@ public class RentalManagerSaga {
 			surchargeAmmount = this.billingService.getReturnSurchargeAmmountFor(
 														event.getMovieType(),
 														initialHireDays,
-														event.getRentalDate(),
+														this.rentalStartDate,
 														event.getReturnDate());
 			
 			bonusAmmount = this.billingService.getBonusAmmountFor(
 														event.getMovieType(), 
-														event.getRentalDate(),
+														this.rentalStartDate,
 														event.getReturnDate());
 		
 		} catch (UnknownPriceFormulaForMovieTypeException e) {

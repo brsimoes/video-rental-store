@@ -23,6 +23,8 @@ public class App {
 		dbInit.loadMovies();
 		
 		dbInit.loadUsers();
+		
+		dbInit.loadRentals();
 	}
 
 	@Bean

@@ -4,16 +4,16 @@ import java.time.LocalDate;
 
 import org.springframework.stereotype.Component;
 
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 
 @Component
-public class BillingServiceImpl implements BillingService {
+public class CasumoBillingSystem implements BillingService {
 
 	@Override
 	public double getRentalChargeAmmountFor(MovieType movieType, int hireDays)
 			throws UnknownPriceFormulaForMovieTypeException {
 		
-		return CasumoPriceTable.getPriceTableFor(movieType).getRentalChargeAmmount(hireDays);
+		return PriceTable.getPriceTableFor(movieType).getRentalChargeAmmount(hireDays);
 	}
 
 	@Override
@@ -21,13 +21,13 @@ public class BillingServiceImpl implements BillingService {
 			MovieType movieType, int alreadyPaidHireDays, LocalDate rentalDate,  LocalDate returnDate)
 			throws UnknownPriceFormulaForMovieTypeException {
 		
-		return CasumoPriceTable.getPriceTableFor(movieType)
+		return PriceTable.getPriceTableFor(movieType)
 				           .getReturnSurChargeAmmount(alreadyPaidHireDays, rentalDate, returnDate);
 	}
 
 	@Override
 	public int getBonusAmmountFor(MovieType movieType, LocalDate rentalDate, LocalDate returnDate)
 			throws UnknownPriceFormulaForMovieTypeException {
-		return CasumoPriceTable.getPriceTableFor(movieType).getBonusAmmount();
+		return PriceTable.getPriceTableFor(movieType).getBonusAmmount();
 	}
 }

@@ -2,7 +2,7 @@ package com.casumo.videorentalstore.catalog.core.domain.event;
 
 import java.util.UUID;
 
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 
 public class MovieCreatedEvent extends MovieEvent {
 

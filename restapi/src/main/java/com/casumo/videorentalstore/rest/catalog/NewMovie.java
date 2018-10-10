@@ -4,7 +4,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 
 public class NewMovie {
 

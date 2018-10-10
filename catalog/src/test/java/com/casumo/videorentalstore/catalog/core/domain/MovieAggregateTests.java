@@ -17,7 +17,6 @@ import com.casumo.videorentalstore.catalog.core.domain.event.MovieCreatedEvent;
 import com.casumo.videorentalstore.catalog.core.domain.event.MovieRentalCanceledEvent;
 import com.casumo.videorentalstore.catalog.core.domain.event.MovieRentedEvent;
 import com.casumo.videorentalstore.catalog.core.domain.event.MovieReturnedEvent;
-import com.casumo.videorentalstore.enums.MovieType;
 
 public class MovieAggregateTests {
 	private FixtureConfiguration<MovieAggregate> rentalFixture;
@@ -50,12 +49,11 @@ public class MovieAggregateTests {
 		MovieType type = MovieType.NEW_RELEASE;
 		int availableCopies = 3;
 		int hireDays = 3;
-		LocalDate now = LocalDate.now();
 		
 		this.rentalFixture
 				.given(new MovieCreatedEvent(movieId, name, type, availableCopies))
-				.when(new RentMovieCommand(movieId, rentalId, hireDays, now))
-				.expectEvents(new MovieRentedEvent(movieId, type, rentalId, hireDays, now,availableCopies-1));
+				.when(new RentMovieCommand(movieId, rentalId, hireDays))
+				.expectEvents(new MovieRentedEvent(movieId, type, rentalId, hireDays,availableCopies-1, name));
 	}
 	
 	@Test
@@ -66,14 +64,13 @@ public class MovieAggregateTests {
 		MovieType type = MovieType.NEW_RELEASE;
 		int availableCopies = 3;
 		int hireDays = 3;
-		LocalDate now = LocalDate.now();
 		
 		this.rentalFixture
 				.given(new MovieCreatedEvent(movieId, name, type, availableCopies),
-						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, now, 2),
-						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, now, 1),
-						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, now, 0))
-				.when(new RentMovieCommand(movieId, UUID.randomUUID(), hireDays, now))
+						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, 2, name),
+						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, 1, name),
+						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, 0, name))
+				.when(new RentMovieCommand(movieId, UUID.randomUUID(), hireDays))
 				.expectNoEvents()
 				.expectException(MovieAggregate.UnavailableCopiesForRentException.class);
 	}
@@ -91,9 +88,9 @@ public class MovieAggregateTests {
 		
 		this.rentalFixture
 				.given(new MovieCreatedEvent(movieId, name, type, availableCopies),
-						new MovieRentedEvent(movieId, type, rentalId, hireDays, now, 2))
+						new MovieRentedEvent(movieId, type, rentalId, hireDays, 2, name))
 				.when(new ReturnMovieCommand(movieId, rentalId, now))
-				.expectEvents(new MovieReturnedEvent(movieId, rentalId, type, now, now, availableCopies));
+				.expectEvents(new MovieReturnedEvent(movieId, rentalId, type, hireDays, now, availableCopies));
 	}
 	
 	@Test
@@ -127,12 +124,12 @@ public class MovieAggregateTests {
 		
 		this.rentalFixture
 				.given(new MovieCreatedEvent(movieId, name, type, availableCopies),
-						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, now, 2),
-						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, now, 1),
-						new MovieRentedEvent(movieId, type, rentalId1, hireDays, now, 0),
-						new MovieReturnedEvent(movieId, rentalId1, type, now, now, 1))
-				.when(new RentMovieCommand(movieId, rentalId2, hireDays, now))
-				.expectEvents(new MovieRentedEvent(movieId, type, rentalId2, hireDays, now, 0));
+						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, 2, name),
+						new MovieRentedEvent(movieId, type, UUID.randomUUID(), hireDays, 1, name),
+						new MovieRentedEvent(movieId, type, rentalId1, hireDays, 0, name),
+						new MovieReturnedEvent(movieId, rentalId1, type, hireDays, now, 1))
+				.when(new RentMovieCommand(movieId, rentalId2, hireDays))
+				.expectEvents(new MovieRentedEvent(movieId, type, rentalId2, hireDays, 0, name));
 	}
 	
 	@Test
@@ -144,11 +141,10 @@ public class MovieAggregateTests {
 		MovieType type = MovieType.NEW_RELEASE;
 		int availableCopies = 3;
 		int hireDays = 3;
-		LocalDate now = LocalDate.now();
 		
 		this.rentalFixture
 				.given(new MovieCreatedEvent(movieId, name, type, availableCopies),
-						new MovieRentedEvent(movieId, type, rentalId, hireDays, now, availableCopies-1))
+						new MovieRentedEvent(movieId, type, rentalId, hireDays, availableCopies-1, name))
 				.when(new CancelMovieRentalCommand(movieId, rentalId))
 				.expectEvents(new MovieRentalCanceledEvent(movieId, rentalId, availableCopies));
 	}

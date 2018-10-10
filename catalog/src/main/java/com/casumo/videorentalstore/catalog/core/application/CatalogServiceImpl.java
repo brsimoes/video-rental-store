@@ -8,14 +8,13 @@ import java.util.stream.Collectors;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.stereotype.Component;
 
+import com.casumo.videorentalstore.catalog.core.application.dto.Movie;
 import com.casumo.videorentalstore.catalog.core.domain.command.CancelMovieRentalCommand;
 import com.casumo.videorentalstore.catalog.core.domain.command.CreateMovieCommand;
 import com.casumo.videorentalstore.catalog.core.domain.command.RentMovieCommand;
 import com.casumo.videorentalstore.catalog.core.domain.command.ReturnMovieCommand;
-import com.casumo.videorentalstore.catalog.core.dto.Movie;
 import com.casumo.videorentalstore.catalog.core.persistence.MovieRepository;
 import com.casumo.videorentalstore.catalog.core.port.CatalogService;
-import com.casumo.videorentalstore.enums.MovieType;
 
 @Component
 public class CatalogServiceImpl implements CatalogService {
@@ -29,23 +28,22 @@ public class CatalogServiceImpl implements CatalogService {
 	}
 	
 	@Override
-	public void createMovie(UUID movieId, String name, MovieType type, int numberOfCopiesAvailable) {
+	public void createMovie(Movie movie) {
 		this.commandGateway.send(
 				new CreateMovieCommand(
-						movieId,
-						name,
-						type,
-						numberOfCopiesAvailable));
+						movie.getId(),
+						movie.getName(),
+						movie.getType(),
+						movie.getAvailableCopiesToRent()));
 	}
 
 	@Override
-	public void rentMovie(UUID movieId, UUID rentalId, int hireDays, LocalDate rentalDate) {
+	public void rentMovie(UUID movieId, UUID rentalId, int hireDays) {
 		this.commandGateway.send(
 				new RentMovieCommand(
 						movieId,
 						rentalId,
-						hireDays,
-						rentalDate));
+						hireDays));
 	}
 	
 	@Override
@@ -66,7 +64,7 @@ public class CatalogServiceImpl implements CatalogService {
 	}
 
 	@Override
-	public Optional<Movie> getMovie(UUID movieId) {
+	public Optional<Movie> getMovieById(UUID movieId) {
 		return this.movieRepository.findById(movieId).map(this::toMovieDto);
 	}
 
@@ -81,7 +79,7 @@ public class CatalogServiceImpl implements CatalogService {
 					movie.getName(),
 					movie.getType(),
 					movie.getAvailableCopiesToRent(),
-					movie.getActiveRentalsExpectedEndDate());
+					movie.getActiveRentals());
 	}
 	
 }

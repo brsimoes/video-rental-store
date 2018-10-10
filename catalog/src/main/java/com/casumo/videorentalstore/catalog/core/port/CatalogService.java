@@ -4,20 +4,19 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.casumo.videorentalstore.catalog.core.dto.Movie;
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.application.dto.Movie;
 
 public interface CatalogService {
 	
-	void createMovie(UUID movieId, String name, MovieType type, int numberOfCopiesAvailable);
+	void createMovie(Movie movie);
 	
-	public void rentMovie(UUID movieId, UUID rentalId, int hireDays, LocalDate rentalDate);
+	public void rentMovie(UUID movieId, UUID rentalId, int hireDays);
 	
 	public void cancelMovieRental(UUID movieId, UUID rentalId);
 	
 	public void returnMovie(UUID movieId, UUID rentalId, LocalDate returnDate);
 	
-	public Optional<Movie> getMovie(UUID movieId);
+	public Optional<Movie> getMovieById(UUID movieId);
 	
 	public Iterable<Movie> getAllMovies();
 }

@@ -8,8 +8,7 @@ import org.axonframework.test.aggregate.FixtureConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.casumo.videorentalstore.enums.MovieType;
-import com.casumo.videorentalstore.enums.RentalStatus;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 import com.casumo.videorentalstore.rental.core.domain.RentalAggregate;
 import com.casumo.videorentalstore.rental.core.domain.command.AddRentedMovieCommand;
 import com.casumo.videorentalstore.rental.core.domain.command.ChangeRentalStatusCommand;
@@ -34,10 +33,11 @@ public class RentalAggregateTests {
 		UUID rentalId = UUID.randomUUID();
 		UUID userId = UUID.randomUUID();
 		RentalStatus status = RentalStatus.OPEN;
+		LocalDate rentalDate = LocalDate.now();
 		
 		this.rentalFixture.givenNoPriorActivity()
-						  .when(new CreateRentalCommand(rentalId, userId))
-						  .expectEvents(new RentalCreatedEvent(rentalId, userId, status));
+						  .when(new CreateRentalCommand(rentalId, userId, rentalDate))
+						  .expectEvents(new RentalCreatedEvent(rentalId, userId, rentalDate, status));
 	}
 	
 	@Test
@@ -46,15 +46,16 @@ public class RentalAggregateTests {
 		UUID rentalId = UUID.randomUUID();
 		UUID userId = UUID.randomUUID();
 		UUID movieId = UUID.randomUUID();
+		String name ="Teste";
 		MovieType movieType = MovieType.NEW_RELEASE;
 		int hireDays = 5;
 		double chargeAmmount = 10;
 		RentalStatus status = RentalStatus.OPEN;
+		LocalDate rentalDate = LocalDate.now();
 		
-		
-		this.rentalFixture.given(new RentalCreatedEvent(rentalId, userId, status))
-						  .when(new AddRentedMovieCommand(rentalId, movieId, hireDays, chargeAmmount, movieType))
-						  .expectEvents(new RentedMovieAddedEvent(rentalId, movieId, hireDays, chargeAmmount, movieType));
+		this.rentalFixture.given(new RentalCreatedEvent(rentalId, userId, rentalDate, status))
+						  .when(new AddRentedMovieCommand(rentalId, movieId, name, movieType, hireDays, chargeAmmount ))
+						  .expectEvents(new RentedMovieAddedEvent(rentalId, movieId, hireDays, chargeAmmount, movieType, name));
 	}
 	
 	@Test
@@ -64,8 +65,9 @@ public class RentalAggregateTests {
 		UUID userId = UUID.randomUUID();
 		RentalStatus oldStatus = RentalStatus.OPEN;
 		RentalStatus newStatus = RentalStatus.SUBMITED;
+		LocalDate rentalDate = LocalDate.now();
 		
-		this.rentalFixture.given(new RentalCreatedEvent(rentalId, userId, oldStatus))
+		this.rentalFixture.given(new RentalCreatedEvent(rentalId, userId, rentalDate, oldStatus))
 						  .when(new ChangeRentalStatusCommand(rentalId, newStatus))
 						  .expectEvents(new RentalStatusChangedEvent(rentalId, newStatus, oldStatus));
 	}
@@ -77,15 +79,17 @@ public class RentalAggregateTests {
 		UUID userId = UUID.randomUUID();
 		UUID movieId = UUID.randomUUID();
 		MovieType movieType = MovieType.NEW_RELEASE;
+		String name = "Teste";
 		int hireDays = 5;
 		double chargeAmmount = 10;
 		double surchargeAmmount = 0;
 		RentalStatus status = RentalStatus.OPEN;
 		LocalDate returnDate = LocalDate.now();
+		LocalDate rentalDate = LocalDate.now();
 		
-		this.rentalFixture.given(new RentalCreatedEvent(rentalId, userId, status),
-								new RentedMovieAddedEvent(rentalId, movieId, hireDays, chargeAmmount, movieType))
+		this.rentalFixture.given(new RentalCreatedEvent(rentalId, userId, rentalDate, status),
+								new RentedMovieAddedEvent(rentalId, movieId, hireDays, chargeAmmount, movieType, name))
 						  .when(new ReturnRentedMovieCommand(rentalId, movieId, surchargeAmmount, returnDate))
-						  .expectEvents(new RentedMovieReturnedEvent(rentalId, movieId, surchargeAmmount, returnDate));
+						  .expectEvents(new RentedMovieReturnedEvent(rentalId, movieId, name, surchargeAmmount, returnDate));
 	}
 }

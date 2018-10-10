@@ -11,7 +11,7 @@ import com.casumo.videorentalstore.rental.core.domain.event.RentedMovieReturnedE
 import com.casumo.videorentalstore.rental.core.domain.event.RentedMovieAddedEvent;
 import com.casumo.videorentalstore.rental.core.persistence.RentalEntity;
 import com.casumo.videorentalstore.rental.core.persistence.RentalRepository;
-import com.casumo.videorentalstore.rental.core.persistence.Return;
+import com.casumo.videorentalstore.rental.core.persistence.ReturnItemDetail;
 
 @Component
 public class RentalEventHandler {
@@ -24,7 +24,10 @@ public class RentalEventHandler {
 
 	@EventHandler
 	public void handle(RentalCreatedEvent evt) {
-		RentalEntity rental = new RentalEntity(evt.getRentalId(), evt.getUserId());
+		RentalEntity rental = new RentalEntity(
+										evt.getRentalId(), 
+										evt.getUserId(), 
+										evt.getStartDate());
 		
 		this.repository.save(rental);
 	}
@@ -33,7 +36,11 @@ public class RentalEventHandler {
 	public void handle(RentedMovieAddedEvent evt) {
 		Optional<RentalEntity> rental = this.repository.findById(evt.getRentalId());
 		if (rental.isPresent()) {
-			rental.get().addRentalItem(evt.getMovieId(), evt.getHireDays(), evt.getChargeAmmount());
+			rental.get().addRentalItem(
+							evt.getMovieId(), 
+							evt.getMovieName(), 
+							evt.getHireDays(), 
+							evt.getChargeAmmount());
 			
 			this.repository.save(rental.get());
 		}
@@ -43,7 +50,12 @@ public class RentalEventHandler {
 	public void handle(RentedMovieReturnedEvent evt) {
 		Optional<RentalEntity> rental = this.repository.findById(evt.getRentalId());
 		if (rental.isPresent()) {
-			rental.get().addReturn(new Return(evt.getMovieId(), evt.getReturnDate(), evt.getSurchargeAmmount()));
+			rental.get().addReturn(
+							new ReturnItemDetail(
+									evt.getMovieId(), 
+									evt.getReturnDate(), 
+									evt.getSurchargeAmmount(),
+									evt.getMovieName()));
 			
 			this.repository.save(rental.get());
 		}

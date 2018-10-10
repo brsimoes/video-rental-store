@@ -1,14 +1,14 @@
 package com.casumo.videorentalstore.catalog.core.persistence;
 
-import java.time.LocalDate;
-import java.util.Map;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.UUID;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 
 @Entity
 public class MovieEntity {
@@ -18,19 +18,18 @@ public class MovieEntity {
 	private MovieType type;
 	private int availableCopiesToRent;
 	@ElementCollection
-	private Map<UUID, LocalDate> activeRentalsExpectedEndDate;
+	private Collection<UUID> activeRentals;
 	
 	protected MovieEntity() {
 		
 	}
 	
-	public MovieEntity(UUID id, String name, MovieType type, int availableCopiesToRent, 
-				Map<UUID, LocalDate> activeRentalsExpectedEndDate) {
+	public MovieEntity(UUID id, String name, MovieType type, int availableCopiesToRent, HashSet<UUID> activeRentals) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.availableCopiesToRent = availableCopiesToRent;
-		this.activeRentalsExpectedEndDate = activeRentalsExpectedEndDate;
+		this.activeRentals = activeRentals;
 	}
 
 	public UUID getId() {
@@ -65,19 +64,19 @@ public class MovieEntity {
 		this.availableCopiesToRent = availableCopiesToRent;
 	}
 	
-	public Map<UUID, LocalDate> getActiveRentalsExpectedEndDate() {
-		return activeRentalsExpectedEndDate;
+	public Collection<UUID> getActiveRentals() {
+		return activeRentals;
 	}
 
-	public void setActiveRentalsExpectedEndDate(Map<UUID, LocalDate> activeRentalsDuration) {
-		this.activeRentalsExpectedEndDate = activeRentalsDuration;
+	public void setActiveRentalsExpectedEndDate(Collection<UUID> activeRentals) {
+		this.activeRentals = activeRentals;
 	}
 
-	public void addRental(UUID rental, LocalDate expectedEndDate) {
-		this.activeRentalsExpectedEndDate.put(rental, expectedEndDate);
+	public void addRental(UUID rental) {
+		this.activeRentals.add(rental);
 	}
 	
 	public void removeRental(UUID rental) {
-		this.activeRentalsExpectedEndDate.remove(rental);
+		this.activeRentals.remove(rental);
 	}
 }

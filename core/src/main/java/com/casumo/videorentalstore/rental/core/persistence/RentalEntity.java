@@ -1,5 +1,6 @@
 package com.casumo.videorentalstore.rental.core.persistence;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,7 +10,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import com.casumo.videorentalstore.enums.RentalStatus;
+import com.casumo.videorentalstore.rental.core.domain.RentalStatus;
 
 @Entity
 public final class RentalEntity {
@@ -18,10 +19,11 @@ public final class RentalEntity {
 	private UUID id;
 	private UUID userId;
 	@ElementCollection
-	private Collection<RentalItemDetails> rentedItems;
+	private Collection<RentalItemDetail> rentedItems;
 	@ElementCollection
-	private Collection<Return> returns;
+	private Collection<ReturnItemDetail> returns;
 	private RentalStatus status;
+	private LocalDate startDate;
 
 	protected RentalEntity() {
 		this.rentedItems = Collections.emptyList();
@@ -29,16 +31,17 @@ public final class RentalEntity {
 		this.status = RentalStatus.OPEN;
 	}
 	
-	public RentalEntity(UUID rentalId, UUID userId) {
+	public RentalEntity(UUID rentalId, UUID userId, LocalDate startDate) {
 		this.id = rentalId;
 		this.userId = userId;
 		this.rentedItems = new ArrayList<>();
 		this.returns = new ArrayList<>();
 		this.status = RentalStatus.OPEN;
+		this.startDate = startDate;
 	}
 			
-	public RentalEntity(UUID rentalId, UUID userId, ArrayList<RentalItemDetails> rentedItems, 
-			ArrayList<Return> returns, RentalStatus rentalStatus) {
+	public RentalEntity(UUID rentalId, UUID userId, ArrayList<RentalItemDetail> rentedItems, 
+			ArrayList<ReturnItemDetail> returns, RentalStatus rentalStatus) {
 		this.id = rentalId;
 		this.userId = userId;
 		this.rentedItems = rentedItems;
@@ -62,27 +65,27 @@ public final class RentalEntity {
 		this.userId = userId;
 	}
 
-	public Collection<RentalItemDetails> getRentedItems() {
+	public Collection<RentalItemDetail> getRentedItems() {
 		return rentedItems;
 	}
 
-	public void addRentalItem(RentalItemDetails item) {
-		this.rentedItems.add(item);
+	public void setRentedItems(Collection<RentalItemDetail> rentedItems) {
+		this.rentedItems = rentedItems;
+	}
+
+	public void addRentalItem(UUID movieId, String movieName, int hireDays, double chargeAmmount) {
+		this.rentedItems.add(new RentalItemDetail(movieId, movieName, hireDays, chargeAmmount));
 	}
 	
-	public void setMoviesRentalDuration(Collection<RentalItemDetails> moviesRentalDuration) {
-		this.rentedItems = moviesRentalDuration;
-	}
-	
-	public void addReturn (Return returnedItem) {
+	public void addReturn (ReturnItemDetail returnedItem) {
 		this.returns.add(returnedItem);
 	}
 
-	public Collection<Return> getReturns() {
+	public Collection<ReturnItemDetail> getReturns() {
 		return returns;
 	}
 
-	public void setReturns(Collection<Return> returns) {
+	public void setReturns(Collection<ReturnItemDetail> returns) {
 		this.returns = returns;
 	}
 
@@ -94,7 +97,11 @@ public final class RentalEntity {
 		this.status = status;
 	}
 
-	public void addRentalItem(UUID movieId, int hireDays, double chargeAmmount) {
-		this.rentedItems.add(new RentalItemDetails(movieId, hireDays, chargeAmmount));
+	public LocalDate getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
 	}
 }

@@ -1,4 +1,4 @@
-package com.casumo.videorentalstore.enums;
+package com.casumo.videorentalstore.rental.core.domain;
 
 public enum RentalStatus {
 	

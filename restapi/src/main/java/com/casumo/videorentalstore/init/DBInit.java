@@ -1,11 +1,16 @@
 package com.casumo.videorentalstore.init;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.axonframework.commandhandling.gateway.CommandGateway;
 
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 import com.casumo.videorentalstore.catalog.core.domain.command.CreateMovieCommand;
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.command.RentMovieCommand;
+import com.casumo.videorentalstore.rental.core.domain.command.CreateRentalCommand;
 import com.casumo.videorentalstore.user.core.domain.command.CreateUserCommand;
 
 public class DBInit {
@@ -85,6 +90,18 @@ public class DBInit {
 				UUID.fromString("cd8a2eec-a33e-43f1-9727-b3a10523f0dd"),
 				"Vasco");
 	}
+	
+	public void loadRentals() {
+		HashMap<UUID, Integer> rental1 = new HashMap<> ();
+		rental1.put(UUID.fromString("ec5cbcd9-08b3-466e-8f76-a40c29bb1738"), 5);
+		rental1.put(UUID.fromString("8e5751ed-c22c-42ec-96cc-ea8210e9b5ef"), 3);
+		
+		this.addRental (
+				UUID.randomUUID(),
+				UUID.fromString("0bc3f79b-8a0a-40a4-8463-222703c78b13"),
+				rental1,
+				LocalDate.of(2018, 10, 1));
+	}
 
 	private void addNewMovie(UUID movieId, String name, MovieType type, int numberCopies) {
 		this.commandGateway.send(new CreateMovieCommand(movieId, name, type, numberCopies));
@@ -92,5 +109,13 @@ public class DBInit {
 	
 	private void addNewUser(UUID userId, String name) {
 		this.commandGateway.send(new CreateUserCommand(userId, name));
+	}
+	
+	private void addRental(UUID rentalId, UUID userId, Map<UUID, Integer> moviesToRent, LocalDate rentalDate) {
+		this.commandGateway.send(new CreateRentalCommand (rentalId,userId, rentalDate));
+		
+		for (UUID movieId : moviesToRent.keySet()) {
+			this.commandGateway.send(new RentMovieCommand(movieId, rentalId, moviesToRent.get(movieId)));
+		}
 	}
 }

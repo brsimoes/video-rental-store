@@ -7,7 +7,7 @@ import com.casumo.videorentalstore.user.core.application.dto.User;
 
 public interface UserService {
 	
-	void createUser(UUID userId, String name);
+	void createUser(User user);
 	
 	public Iterable<User> getAllUsers();
 	

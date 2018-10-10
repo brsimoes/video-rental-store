@@ -2,14 +2,14 @@ package com.casumo.videorentalstore.rental.core.domain.service;
 
 import java.time.LocalDate;
 
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 
-public abstract class CasumoPriceTable {
+public abstract class PriceTable {
 	
 	public final static double PREMIUM_PRICE = 40;
     public final static double BASIC_PRICE = 30;
 
-	public static CasumoPriceTable getPriceTableFor(MovieType type) throws UnknownPriceFormulaForMovieTypeException {
+	public static PriceTable getPriceTableFor(MovieType type) throws UnknownPriceFormulaForMovieTypeException {
 
 		if (type.isNewRelease())
 			return new NewReleasePriceTable();

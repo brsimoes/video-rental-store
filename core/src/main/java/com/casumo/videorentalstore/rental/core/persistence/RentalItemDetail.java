@@ -5,20 +5,22 @@ import java.util.UUID;
 import javax.persistence.Embeddable;
 
 @Embeddable
-public final class RentalItemDetails {
+public final class RentalItemDetail {
 
 	private UUID movieId;
+	private String movieName;
 	private int hireDaysDuration;
 	private double chargeAmmount;
 	
-	protected RentalItemDetails () {
+	protected RentalItemDetail () {
 		
 	}
 	
-	public RentalItemDetails(UUID movieId, int hireDaysDuration, double chargeAmmount) {
+	public RentalItemDetail(UUID movieId, String movieName, int hireDaysDuration, double chargeAmmount) {
 		this.movieId = movieId;
 		this.hireDaysDuration = hireDaysDuration;
 		this.chargeAmmount = chargeAmmount;
+		this.movieName = movieName;
 	}
 
 	public UUID getMovieId() {
@@ -29,11 +31,11 @@ public final class RentalItemDetails {
 		this.movieId = movieId;
 	}
 
-	public int getRentlDaysDuration() {
+	public int getHireDaysDuration() {
 		return hireDaysDuration;
 	}
 
-	public void setRentlDaysDuration (int numberOfDays) {
+	public void setHireDaysDuration (int numberOfDays) {
 		this.hireDaysDuration = numberOfDays;
 	}
 
@@ -43,5 +45,13 @@ public final class RentalItemDetails {
 
 	public void setChargeAmmount(double chargeAmmount) {
 		this.chargeAmmount = chargeAmmount;
+	}
+
+	public String getMovieName() {
+		return movieName;
+	}
+
+	public void setMovieName(String movieName) {
+		this.movieName = movieName;
 	}
 }

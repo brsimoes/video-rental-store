@@ -1,9 +1,10 @@
 package com.casumo.videorentalstore.user.core.persistence;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
 
-import javax.persistence.Embedded;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -13,14 +14,14 @@ public class UserEntity {
 	private UUID id;
 	private String name;
 	private int bonusPoints;
-	@Embedded
-	private HashSet<UUID> rentals;
+	@ElementCollection
+	private Collection<UUID> rentals;
 	
 	protected UserEntity() {
 		
 	}
 	
-	public UserEntity(UUID id, String name, int bonusPoints, HashSet<UUID> rentals) {
+	public UserEntity(UUID id, String name, int bonusPoints, Collection<UUID> rentals) {
 		this.id = id;
 		this.name = name;
 		this.rentals = rentals;
@@ -43,7 +44,7 @@ public class UserEntity {
 		this.name = name;
 	}
 
-	public HashSet<UUID> getRentals() {
+	public Collection<UUID> getRentals() {
 		return rentals;
 	}
 
@@ -57,5 +58,9 @@ public class UserEntity {
 	
 	public void setBonusPoints(int bonusPoints) {
 		this.bonusPoints = bonusPoints;
+	}
+	
+	public void addRental(UUID rentalId) {
+		this.rentals.add(rentalId);
 	}
 }

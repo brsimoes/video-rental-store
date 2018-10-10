@@ -1,9 +1,10 @@
 package com.casumo.videorentalstore.rental.core.application;
 
-import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,13 @@ import org.springframework.stereotype.Component;
 
 import com.casumo.videorentalstore.catalog.core.domain.command.RentMovieCommand;
 import com.casumo.videorentalstore.catalog.core.domain.command.ReturnMovieCommand;
-import com.casumo.videorentalstore.rental.core.application.dto.RentalItemRequest;
+import com.casumo.videorentalstore.rental.core.application.dto.Rental;
+import com.casumo.videorentalstore.rental.core.application.dto.RentalItem;
+import com.casumo.videorentalstore.rental.core.application.dto.Return;
 import com.casumo.videorentalstore.rental.core.domain.command.CreateRentalCommand;
 import com.casumo.videorentalstore.rental.core.persistence.RentalEntity;
+import com.casumo.videorentalstore.rental.core.persistence.RentalItemDetail;
+import com.casumo.videorentalstore.rental.core.persistence.ReturnItemDetail;
 import com.casumo.videorentalstore.rental.core.persistence.RentalRepository;
 import com.casumo.videorentalstore.rental.core.port.RentalService;
 
@@ -22,53 +27,117 @@ public class RentalServiceImpl implements RentalService {
 
 	private final CommandGateway commandGateway;
 	private final RentalRepository rentalRepository;
-	private final Clock clock;
 
 	@Autowired
-	public RentalServiceImpl(CommandGateway commandGateway, RentalRepository rentalRepository, Clock clock) {
+	public RentalServiceImpl(
+				CommandGateway commandGateway, 
+				RentalRepository rentalRepository) {
+		
 		this.commandGateway = commandGateway;
 		this.rentalRepository = rentalRepository;
-		this.clock = clock;
 	}
 
 	@Override
-	public UUID createRental(UUID userId) {
-
-		UUID rentalId = UUID.randomUUID();
-
-		this.commandGateway.send(new CreateRentalCommand(rentalId, userId));
-
-		return rentalId;
+	public void createRental(Rental rental) {
+		this.commandGateway.send(
+				new CreateRentalCommand(
+						rental.getId(), 
+						rental.getId(), 
+						rental.getStartDate()));
 	}
 
 	@Override
-	public void addMovieToRental(UUID rentalId, RentalItemRequest rentalDetails) {
-		if (rentalDetails != null) {
-			this.commandGateway.send(
-					new RentMovieCommand(
-							rentalDetails.getMovieId(), 
-							rentalId, 
-							rentalDetails.getRentlDaysDuration(),
-							LocalDate.now(clock)));
-		}
+	public void addMovieToRental(UUID rentalId, UUID movieId, int hireDays) {
+		this.commandGateway.send(
+				new RentMovieCommand(
+						movieId, 
+						rentalId, 
+						hireDays));
 	}
 
 	@Override
-	public Iterable<RentalEntity> getAllRentals() {
-		return this.rentalRepository.findAll();
+	public Iterable<Rental> getAllRentals() {
+		return this.rentalRepository.findAll()
+									.stream()
+									.map(this::toRentalDto)
+									.collect(Collectors.toList());
 	}
 
 	@Override
-	public Optional<RentalEntity> getRentalById(UUID rentalId) {
-		return this.rentalRepository.findById(rentalId);
+	public Optional<Rental> getRentalById(UUID rentalId) {
+		return this.rentalRepository.findById(rentalId)
+									.map(this::toRentalDto);
 	}
 
 	@Override
-	public void returnMovie(UUID rentalId, UUID movieId) {
+	public void returnMovie(UUID rentalId, UUID movieId, LocalDate returnDate) {
 		this.commandGateway.send(
 				new ReturnMovieCommand(
 						movieId, 
 						rentalId, 
-						LocalDate.now(clock)));
+						returnDate));
+	}
+	
+	@Override
+	public Optional<RentalItem> getRentalMovie(UUID rentalId, UUID movieId) {
+		return this.rentalRepository.findById(rentalId)
+				.flatMap(i -> i.getRentedItems().stream().filter(r -> r.getMovieId().equals(movieId)).findFirst())
+				.map(this::toRentalItemDto);
+	}
+
+	@Override
+	public Optional<Return> getReturnMovie(UUID rentalId, UUID movieId) {
+		return this.rentalRepository.findById(rentalId)
+				.flatMap(i -> i.getReturns().stream().filter(r -> r.getMovieId().equals(movieId)).findFirst())
+				.map(this::toReturnItemDto);
+	}
+	
+	private Rental toRentalDto (RentalEntity rental) {
+		
+		Collection<RentalItem> rentalItems =
+				rental.getRentedItems()
+					  .stream()
+					  .map( item -> new RentalItem(
+					  						item.getMovieId(), 
+					  						item.getHireDaysDuration(),
+					  						item.getChargeAmmount(),
+					  						item.getMovieName()))
+					  .collect(Collectors.toList());
+		
+		Collection<Return> returns =
+				rental.getReturns()
+					  .stream()
+					  .map( item -> new Return(
+					  						item.getMovieId(), 
+					  						item.getReturnDate(),
+					  						item.getSurchargeAmmount(),
+					  						item.getMovieName()))
+					  .collect(Collectors.toList());
+		
+		return new Rental (
+					rental.getId(),
+					rental.getUserId(),
+					rentalItems, 
+					returns, 
+					rental.getStatus(), 
+					rental.getStartDate());
+	}
+	
+	private RentalItem toRentalItemDto (RentalItemDetail item) {
+		
+		return new RentalItem(
+					item.getMovieId(), 
+					item.getHireDaysDuration(),
+					item.getChargeAmmount(),
+					item.getMovieName());
+	}
+	
+	private Return toReturnItemDto (ReturnItemDetail item) {
+			
+		return new Return(
+					item.getMovieId(), 
+					item.getReturnDate(),
+					item.getSurchargeAmmount(),
+					item.getMovieName());
 	}
 }

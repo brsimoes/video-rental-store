@@ -1,26 +1,25 @@
 package com.casumo.videorentalstore.catalog.core.domain.event;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 
 public class MovieRentedEvent extends MovieEvent {
 
 	private final MovieType movieType;
 	private final UUID rentalId;
 	private final int hireDays;
-	private final LocalDate rentalDate;
-	private final int copiesLastToRent;
+	private final int copiesLeftToRent;
+	private final String movieName;
 
-	public MovieRentedEvent(UUID movieId, MovieType movieType, UUID rentalId, int hireDays, LocalDate rentalDate,
-			int copiesLastToRent) {
+	public MovieRentedEvent(UUID movieId, MovieType movieType, UUID rentalId, int hireDays,
+			int copiesLeftToRent, String movieName) {
 		super(movieId);
 		this.rentalId = rentalId;
 		this.hireDays = hireDays;
 		this.movieType = movieType;
-		this.rentalDate = rentalDate;
-		this.copiesLastToRent = copiesLastToRent;
+		this.copiesLeftToRent = copiesLeftToRent;
+		this.movieName = movieName;
 	}
 
 	public UUID getRentalId() {
@@ -35,11 +34,11 @@ public class MovieRentedEvent extends MovieEvent {
 		return movieType;
 	}
 
-	public LocalDate getRentalDate() {
-		return rentalDate;
+	public int getCopiesLeftToRent() {
+		return copiesLeftToRent;
 	}
 
-	public int getCopiesLastToRent() {
-		return copiesLastToRent;
+	public String getMovieName() {
+		return movieName;
 	}
 }

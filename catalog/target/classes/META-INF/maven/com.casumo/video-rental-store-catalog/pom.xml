@@ -10,14 +10,6 @@
 		<artifactId>video-rental-store</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
     </parent>
-    
-    <dependencies>
-    	<dependency>
-    		<groupId>com.casumo</groupId>
-            <artifactId>video-rental-store-shared-kernel</artifactId>
-            <version>${project.version}</version>
-    	</dependency>
-    </dependencies>
 
 	<build>
 		<plugins>

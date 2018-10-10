@@ -3,7 +3,7 @@ package com.casumo.videorentalstore.rental.core.domain.service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-public class RegularFilmPriceTable extends CasumoPriceTable {
+public class RegularFilmPriceTable extends PriceTable {
 
 	public static final int FLAT_PRICE_PERIOD = 3;
 	
@@ -11,7 +11,7 @@ public class RegularFilmPriceTable extends CasumoPriceTable {
 	public double getRentalChargeAmmount(int hireDays) {
 		int daysAfterFlatPrice = hireDays - FLAT_PRICE_PERIOD;
 
-		return CasumoPriceTable.BASIC_PRICE + (daysAfterFlatPrice > 0 ? daysAfterFlatPrice * CasumoPriceTable.BASIC_PRICE : 0);
+		return PriceTable.BASIC_PRICE + (daysAfterFlatPrice > 0 ? daysAfterFlatPrice * PriceTable.BASIC_PRICE : 0);
 	}
 
 	@Override

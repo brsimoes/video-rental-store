@@ -2,7 +2,7 @@ package com.casumo.videorentalstore.catalog.core.domain.command;
 
 import java.util.UUID;
 
-import com.casumo.videorentalstore.enums.MovieType;
+import com.casumo.videorentalstore.catalog.core.domain.MovieType;
 
 public class CreateMovieCommand extends MovieCommand {
 

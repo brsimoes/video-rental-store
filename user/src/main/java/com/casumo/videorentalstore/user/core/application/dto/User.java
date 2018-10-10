@@ -1,7 +1,7 @@
 package com.casumo.videorentalstore.user.core.application.dto;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 import java.util.UUID;
 
 public class User {
@@ -9,10 +9,10 @@ public class User {
 	private UUID id;
 	private String name;
 	private int bonusPoints;
-	private Set<UUID> rentals;
+	private Collection<UUID> rentals;
 	
 	public User() {
-		this.rentals = Collections.emptySet();
+		this.rentals = Collections.emptyList();
 	}
 	
 	public User(UUID id, String name) {
@@ -22,10 +22,10 @@ public class User {
 		this.rentals = Collections.emptySet();
 	}
 	
-	public User(UUID id, String name, int bonusPoints, Set<UUID> rentals) {
+	public User(UUID id, String name, int bonusPoints, Collection<UUID> activeRentals) {
 		this.id = id;
 		this.name = name;
-		this.rentals = rentals;
+		this.rentals = activeRentals;
 		this.bonusPoints = bonusPoints;
 	}
 
@@ -53,11 +53,11 @@ public class User {
 		this.bonusPoints = bonusPoints;
 	}
 
-	public Set<UUID> getRentals() {
+	public Collection<UUID> getRentals() {
 		return rentals;
 	}
 
-	public void setRentals(Set<UUID> rentals) {
+	public void setRentals(Collection<UUID> rentals) {
 		this.rentals = rentals;
 	}
 }
