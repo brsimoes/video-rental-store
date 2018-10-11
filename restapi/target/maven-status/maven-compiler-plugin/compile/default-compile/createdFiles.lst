@@ -1,0 +1,15 @@
+com/casumo/videorentalstore/configuration/AppConfiguration.class
+com/casumo/videorentalstore/rest/catalog/CatalogController.class
+com/casumo/videorentalstore/rest/rental/RentalResourceAssembler.class
+com/casumo/videorentalstore/rest/catalog/MovieResourceAssembler.class
+com/casumo/videorentalstore/rest/rental/RentalItemResourceAssembler.class
+com/casumo/videorentalstore/rest/rental/ReturnItemResourceAssembler.class
+com/casumo/videorentalstore/App.class
+com/casumo/videorentalstore/rest/rental/NewRentalItem.class
+com/casumo/videorentalstore/rest/user/NewUser.class
+com/casumo/videorentalstore/rest/user/UserResourceAssembler.class
+com/casumo/videorentalstore/rest/user/UsersController.class
+com/casumo/videorentalstore/init/DBInit.class
+com/casumo/videorentalstore/rest/rental/RentalResource.class
+com/casumo/videorentalstore/rest/catalog/NewMovie.class
+com/casumo/videorentalstore/rest/rental/RentalsController.class

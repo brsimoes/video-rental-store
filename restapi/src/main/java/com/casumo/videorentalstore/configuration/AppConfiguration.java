@@ -3,6 +3,7 @@ package com.casumo.videorentalstore.configuration;
 import static com.google.common.base.Predicates.or;
 import static springfox.documentation.builders.PathSelectors.regex;
 
+import java.time.Clock;
 import java.util.Collections;
 
 import org.springframework.context.annotation.Bean;
@@ -28,21 +29,18 @@ public class AppConfiguration {
 	}
 
 	private ApiInfo apiInfo() {
-		return new ApiInfo(
-					"Video Rental Store API", 
-					"Video Rental Store sample for Casumo code test.", 
-					"V1", 
-					"",
-					new Contact("Bruno Dias", "", "brsimoes@gmail.com"), 
-					"Apache 2.0",
-					"http://www.apache.org/licenses/LICENSE-2.0", 
-					Collections.emptyList());
+		return new ApiInfo("Video Rental Store API", "Video Rental Store sample for Casumo code test.", "V1", "",
+				new Contact("Bruno Dias", "", "brsimoes@gmail.com"), "Apache 2.0",
+				"http://www.apache.org/licenses/LICENSE-2.0", Collections.emptyList());
 	}
 
 	@SuppressWarnings("unchecked")
 	private Predicate<String> paths() {
-		return or(regex("/movies.*"), 
-				  regex("/rentals.*"),
-				  regex("/users.*"));
+		return or(regex("/movies.*"), regex("/rentals.*"), regex("/users.*"));
+	}
+
+	@Bean
+	public Clock clock() {
+		return Clock.systemDefaultZone();
 	}
 }

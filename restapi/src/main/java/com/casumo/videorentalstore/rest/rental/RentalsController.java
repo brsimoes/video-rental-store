@@ -10,16 +10,24 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonPatch;
 import javax.validation.Valid;
 
-import org.springframework.hateoas.MediaTypes;
+import org.json.JSONArray;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,15 +37,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.casumo.videorentalstore.rental.core.application.dto.Rental;
 import com.casumo.videorentalstore.rental.core.application.dto.RentalItem;
-import com.casumo.videorentalstore.rental.core.application.dto.Return;
+import com.casumo.videorentalstore.rental.core.application.dto.ReturnedItem;
 import com.casumo.videorentalstore.rental.core.port.RentalService;
+import com.casumo.videorentalstore.rest.rental.util.RentalJsonConverter;
 import com.google.common.collect.Iterables;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping(value = "/rentals", produces = MediaTypes.HAL_JSON_VALUE)
+@RequestMapping(value = "/rentals")
 @Api(value="rentals", tags="Rentals", description="Operations to manage rentals")
 public class RentalsController {
 
@@ -46,19 +55,22 @@ public class RentalsController {
 	private RentalItemResourceAssembler rentalItemResourceAssembler;
 	private ReturnItemResourceAssembler returnItemResourceAssembler;
 	private Clock clock;
+	private RentalJsonConverter jsonConverter;
 
 	public RentalsController(
 				RentalService rentalService,
 				Clock clock, 
 				RentalResourceAssembler rentalResourceAssembler,
 				RentalItemResourceAssembler rentalItemResourceAssembler,
-				ReturnItemResourceAssembler returnItemResourceAssembler) {
+				ReturnItemResourceAssembler returnItemResourceAssembler,
+				RentalJsonConverter jsonConverter) {
 		
 		this.rentalService = rentalService;
 		this.clock = clock;
 		this.rentalResourceAssembler = rentalResourceAssembler;
 		this.rentalItemResourceAssembler = rentalItemResourceAssembler;
 		this.returnItemResourceAssembler = returnItemResourceAssembler;
+		this.jsonConverter = jsonConverter;
 	}
 	
 	@ApiOperation(value = "Create a new rental session.", response = ResponseEntity.class)
@@ -75,7 +87,7 @@ public class RentalsController {
 		return created(new URI(rentalResource.getId().expand().getHref()))
 				.body(rentalResource);
 	}
-
+	
 	@ApiOperation(value="View a list of all rentals.", response = ResponseEntity.class)
 	@GetMapping
 	public ResponseEntity<Resources<Resource<RentalResource>>> getAllRentals() {
@@ -84,8 +96,42 @@ public class RentalsController {
 						linkTo(methodOn(RentalsController.class).getAllRentals()).withSelfRel()));
 	}
 
+	@ApiOperation(
+			value = "Update rental properties.",
+			notes="Currently only rental status is allowed to change.",
+			response = ResponseEntity.class)
+	@PatchMapping(value="{id}", consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Resource<RentalResource>> updateRentalStatus(
+			@PathVariable @Valid UUID id,
+			@RequestBody Map<String, Object>[] patchOperations) {
+		
+		final Optional<Rental> rental = this.rentalService.getRentalById(id);
+		
+		if (rental.isPresent())
+		{
+			JsonArrayBuilder builder = Json.createArrayBuilder();
+			
+			for (Map<String, Object> operation : patchOperations) {
+				builder.add(Json.createObjectBuilder(operation).build());
+			}
+			
+			final JsonPatch patch = Json.createPatch(builder.build());
+
+			final JsonObject result = patch.apply(jsonConverter.toJson(rental.get()));
+
+			Rental patchedRental = jsonConverter.fromJson(result);
+			
+			this.rentalService.updateRental(patchedRental);
+			
+			return ok(rentalResourceAssembler.toResource(patchedRental));
+			
+		} else {
+			return notFound().build();
+		}
+	}
+
 	@ApiOperation(value="Search a rental by Id.", response = ResponseEntity.class)
-	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	@GetMapping("/{id}")
 	public ResponseEntity<Resource<RentalResource>> getRentalById(@PathVariable UUID id) {
 		return this.rentalService.getRentalById(id)
 							   	 .map(rentalResourceAssembler::toResource)
@@ -107,11 +153,11 @@ public class RentalsController {
 	
 	@ApiOperation(value="Get returned movies of a rental session.", response = ResponseEntity.class)
 	@GetMapping("/{rentalId}/returns")
-	public ResponseEntity<Resources<Resource<Return>>> getReturns(@PathVariable UUID rentalId) {
+	public ResponseEntity<Resources<Resource<ReturnedItem>>> getReturns(@PathVariable UUID rentalId) {
 
 		return this.rentalService.getRentalById(rentalId)
-			   	 .map(r -> new Resources<Resource<Return>>(
-			   			 		Iterables.transform(r.getReturns(),returnItemResourceAssembler::toResource),
+			   	 .map(r -> new Resources<Resource<ReturnedItem>>(
+			   			 		Iterables.transform(r.getReturnedItems(),returnItemResourceAssembler::toResource),
 			   			 		linkTo(methodOn(RentalsController.class).getRentalById(rentalId)).withSelfRel()))
 			   	 .map(ResponseEntity::ok)
 			   	 .orElse(notFound().build());
@@ -135,15 +181,15 @@ public class RentalsController {
 	
 	@ApiOperation(value="Return a movie.", response = ResponseEntity.class)
 	@PostMapping(value = "/{rentalId}/returns")
-	public ResponseEntity<Resource<Return>> returnMovie(
+	public ResponseEntity<Resource<ReturnedItem>> returnMovie(
 				@PathVariable UUID rentalId, 
 				@RequestBody @Valid UUID movieId) throws URISyntaxException {
 
 		this.rentalService.returnMovie(rentalId, movieId, LocalDate.now(clock));
 		
-		Optional<Return> returnItem = this.rentalService.getReturnMovie(rentalId, movieId);
+		Optional<ReturnedItem> returnItem = this.rentalService.getReturnMovie(rentalId, movieId);
 
-		Resource<Return> rentalResource = returnItemResourceAssembler.toResource(returnItem.get());
+		Resource<ReturnedItem> rentalResource = returnItemResourceAssembler.toResource(returnItem.get());
 
 		return created(new URI(rentalResource.getId().expand().getHref()))
 				.body(rentalResource);
@@ -166,7 +212,7 @@ public class RentalsController {
 	
 	@ApiOperation(value="Get details on returned movie.", response = ResponseEntity.class)
 	@PostMapping(value = "/{rentalId}/returns/{movieId}")
-	public ResponseEntity<Resource<Return>> getReturnedMovie(
+	public ResponseEntity<Resource<ReturnedItem>> getReturnedMovie(
 				@PathVariable UUID rentalId, 
 				@RequestBody @Valid UUID movieId) {
 
