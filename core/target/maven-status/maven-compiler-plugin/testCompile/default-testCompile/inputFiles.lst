@@ -1,3 +1,2 @@
-/Users/bruno/projects/video-rental-store/core/src/test/java/com/casumo/videorentalstore/rental/application/RentalServiceTests.java
-/Users/bruno/projects/video-rental-store/core/src/test/java/com/casumo/videorentalstore/rental/domain/RentalAggregateTests.java
-/Users/bruno/projects/video-rental-store/core/src/test/java/com/casumo/videorentalstore/rental/domain/RentalManagerSagaTests.java
+/Users/bruno/projects/video-rental-store/core/src/test/java/com/casumo/videorentalstore/rental/core/domain/RentalAggregateTests.java
+/Users/bruno/projects/video-rental-store/core/src/test/java/com/casumo/videorentalstore/rental/core/domain/RentalManagerSagaTests.java

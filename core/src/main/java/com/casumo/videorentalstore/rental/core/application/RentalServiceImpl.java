@@ -14,7 +14,10 @@ import com.casumo.videorentalstore.catalog.core.domain.command.RentMovieCommand;
 import com.casumo.videorentalstore.catalog.core.domain.command.ReturnMovieCommand;
 import com.casumo.videorentalstore.rental.core.application.dto.Rental;
 import com.casumo.videorentalstore.rental.core.application.dto.RentalItem;
-import com.casumo.videorentalstore.rental.core.application.dto.Return;
+import com.casumo.videorentalstore.rental.core.application.dto.ReturnedItem;
+import com.casumo.videorentalstore.rental.core.domain.RentalAggregate.InvalidStatusException;
+import com.casumo.videorentalstore.rental.core.domain.RentalStatus;
+import com.casumo.videorentalstore.rental.core.domain.command.ChangeRentalStatusCommand;
 import com.casumo.videorentalstore.rental.core.domain.command.CreateRentalCommand;
 import com.casumo.videorentalstore.rental.core.persistence.RentalEntity;
 import com.casumo.videorentalstore.rental.core.persistence.RentalItemDetail;
@@ -47,12 +50,12 @@ public class RentalServiceImpl implements RentalService {
 	}
 
 	@Override
-	public void addMovieToRental(UUID rentalId, UUID movieId, int hireDays) {
+	public void addMovieToRental(UUID rentalId, UUID movieId, int numberOfDaysToHire) {
 		this.commandGateway.send(
 				new RentMovieCommand(
 						movieId, 
 						rentalId, 
-						hireDays));
+						numberOfDaysToHire));
 	}
 
 	@Override
@@ -86,10 +89,20 @@ public class RentalServiceImpl implements RentalService {
 	}
 
 	@Override
-	public Optional<Return> getReturnMovie(UUID rentalId, UUID movieId) {
+	public Optional<ReturnedItem> getReturnMovie(UUID rentalId, UUID movieId) {
 		return this.rentalRepository.findById(rentalId)
 				.flatMap(i -> i.getReturns().stream().filter(r -> r.getMovieId().equals(movieId)).findFirst())
 				.map(this::toReturnItemDto);
+	}
+
+
+	@Override
+	public void updateRentalStatus(UUID rentalId, RentalStatus rentalStatus) 
+			throws InvalidStatusException {
+		this.commandGateway.send(
+				new ChangeRentalStatusCommand(
+						rentalId, 
+						rentalStatus));
 	}
 	
 	private Rental toRentalDto (RentalEntity rental) {
@@ -104,10 +117,10 @@ public class RentalServiceImpl implements RentalService {
 					  						item.getMovieName()))
 					  .collect(Collectors.toList());
 		
-		Collection<Return> returns =
+		Collection<ReturnedItem> returns =
 				rental.getReturns()
 					  .stream()
-					  .map( item -> new Return(
+					  .map( item -> new ReturnedItem(
 					  						item.getMovieId(), 
 					  						item.getReturnDate(),
 					  						item.getSurchargeAmmount(),
@@ -132,9 +145,9 @@ public class RentalServiceImpl implements RentalService {
 					item.getMovieName());
 	}
 	
-	private Return toReturnItemDto (ReturnItemDetail item) {
+	private ReturnedItem toReturnItemDto (ReturnItemDetail item) {
 			
-		return new Return(
+		return new ReturnedItem(
 					item.getMovieId(), 
 					item.getReturnDate(),
 					item.getSurchargeAmmount(),

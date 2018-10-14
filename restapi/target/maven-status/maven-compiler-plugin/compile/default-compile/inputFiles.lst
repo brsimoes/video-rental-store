@@ -1,4 +1,6 @@
+/Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/rest/rental/InvalidRentalPatch.java
 /Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/rest/catalog/CatalogController.java
+/Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/rest/rental/util/RentalJsonConverter.java
 /Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/rest/rental/RentalsController.java
 /Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/rest/user/NewUser.java
 /Users/bruno/projects/video-rental-store/restapi/src/main/java/com/casumo/videorentalstore/rest/rental/RentalResourceAssembler.java

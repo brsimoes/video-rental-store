@@ -5,15 +5,15 @@ import java.util.UUID;
 public final class NewRentalItem {
 
 	private UUID movieId;
-	private int hireDaysDuration;
+	private int numberOfDaysToHire;
 	
 	protected NewRentalItem () {
 		
 	}
 	
-	public NewRentalItem(UUID movieId, int hireDaysDuration) {
+	public NewRentalItem(UUID movieId, int numberOfDaysToHire) {
 		this.movieId = movieId;
-		this.hireDaysDuration = hireDaysDuration;
+		this.numberOfDaysToHire = numberOfDaysToHire;
 	}
 
 	public UUID getMovieId() {
@@ -24,11 +24,11 @@ public final class NewRentalItem {
 		this.movieId = movieId;
 	}
 
-	public int getRentlDaysDuration() {
-		return hireDaysDuration;
+	public int getNumberOfDaysToHire() {
+		return numberOfDaysToHire;
 	}
 
-	public void setRentlDaysDuration (int numberOfDays) {
-		this.hireDaysDuration = numberOfDays;
+	public void setNumberOfDaysToHire (int numberOfDays) {
+		this.numberOfDaysToHire = numberOfDays;
 	}
 }

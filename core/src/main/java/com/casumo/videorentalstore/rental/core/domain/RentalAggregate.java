@@ -41,13 +41,18 @@ public class RentalAggregate {
 	}
 
 	@CommandHandler
-	public void handle(AddRentedMovieCommand command) {
-		apply(new RentedMovieAddedEvent(command.getRentalId(), command.getMovieId(), command.getHireDays(),
-				command.getChargeAmmount(), command.getMovieType(), command.getMovieName()));
+	public void handle(AddRentedMovieCommand command) throws OperationNotPermitedException {
+		if (this.rentalStatus.isOpen()) {
+			apply(new RentedMovieAddedEvent(command.getRentalId(), command.getMovieId(), command.getHireDays(),
+					command.getChargeAmmount(), command.getMovieType(), command.getMovieName()));
+		} else {
+			throw new OperationNotPermitedException ("The rental status does not allow adding new movies.");
+		}
 	}
 
 	@CommandHandler
-	public void handle(ReturnRentedMovieCommand command) {
+	public void handle(ReturnRentedMovieCommand command) throws OperationNotPermitedException {
+		if (this.rentalStatus.isSubmited()) {
 			RentalItem rental = moviesRented.get(command.getMovieId());
 			
 			if(rental != null) {
@@ -61,11 +66,29 @@ public class RentalAggregate {
 			} else {
 				throw new MovieNotRentedException();
 			}
+		} else {
+			throw new OperationNotPermitedException ("The rental status does not allow return a movie.");
+		}
 	}
 	
 	@CommandHandler
-	public void handle(ChangeRentalStatusCommand command) {
-		apply(new RentalStatusChangedEvent(command.getRentalId(), command.getNewStatus(), this.rentalStatus));
+	public void handle(ChangeRentalStatusCommand command) throws InvalidStatusException {
+		if( rentalStatus != command.getNewStatus()) {
+			
+			if (rentalStatus.isClosed() || rentalStatus.isCanceled()) {
+				throw new InvalidStatusException("Cannot change status");
+			}
+			
+			if (rentalStatus.isOpen() && command.getNewStatus().isClosed()) {
+				throw new InvalidStatusException("Allowed status change: Submited, Canceled");
+			}
+			
+			if (rentalStatus.isSubmited() && command.getNewStatus().isOpen()) {
+				throw new InvalidStatusException("Allowed status change: Closed, Canceled");
+			}
+			
+			apply(new RentalStatusChangedEvent(command.getRentalId(), command.getNewStatus(), this.rentalStatus));
+		}
 	}
 
 	@EventSourcingHandler
@@ -104,6 +127,28 @@ public class RentalAggregate {
 
 		private static final long serialVersionUID = -194444633524613856L;
 
+	}
+	
+	public class InvalidStatusException extends Exception {
+
+		private static final long serialVersionUID = -194324633524613856L;
+		
+		InvalidStatusException (String reason) {
+			super(reason);
+		}
+	}
+	
+	public class OperationNotPermitedException extends Exception {
+		
+		private static final long serialVersionUID = -9143693104366414145L;
+
+		OperationNotPermitedException () {
+			super();
+		}
+		
+		OperationNotPermitedException (String reason) {
+			super(reason);
+		}
 	}
 	
 	private class RentalItem {

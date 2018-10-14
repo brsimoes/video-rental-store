@@ -1,0 +1,15 @@
+com/casumo/videorentalstore/user/core/domain/command/AddBonusPointsCommand.class
+com/casumo/videorentalstore/user/core/domain/event/UserRentalAddedEvent.class
+com/casumo/videorentalstore/user/core/domain/event/BonusPointsUpdatedEvent.class
+com/casumo/videorentalstore/user/core/persistence/UserRepository.class
+com/casumo/videorentalstore/user/core/application/dto/User.class
+com/casumo/videorentalstore/user/core/application/UserEventHandler.class
+com/casumo/videorentalstore/user/core/port/UserService.class
+com/casumo/videorentalstore/user/core/domain/UserAggregate.class
+com/casumo/videorentalstore/user/core/application/UserServiceImpl.class
+com/casumo/videorentalstore/user/core/domain/command/UserCommand.class
+com/casumo/videorentalstore/user/core/domain/command/AddUserRentalCommand.class
+com/casumo/videorentalstore/user/core/domain/event/UserCreatedEvent.class
+com/casumo/videorentalstore/user/core/domain/command/CreateUserCommand.class
+com/casumo/videorentalstore/user/core/persistence/UserEntity.class
+com/casumo/videorentalstore/user/core/domain/event/UserEvent.class

@@ -31,7 +31,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping(value = "/movies", produces = MediaTypes.HAL_JSON_VALUE)
+@RequestMapping(value = "/v1/movies", produces = MediaTypes.HAL_JSON_VALUE)
 @Api(value = "movieCatalog", tags = "Movie Catalog", description = "Operations to manage the movies Catalog")
 public class CatalogController {
 
@@ -43,7 +43,10 @@ public class CatalogController {
 		this.resourceAssembler = resourceAssembler;
 	}
 
-	@ApiOperation(value = "Create a new movie.", response = ResponseEntity.class)
+	@ApiOperation(
+		value = "Creates a new movie.",
+		notes="The type of the movie can be \"NEW_RELEASE\", \"REGULAR_FILM\" or \"OLD_FILM\"",
+		response = Movie.class)
 	@PostMapping
 	public ResponseEntity<Resource<Movie>> createMovie(@RequestBody @Valid NewMovie newMovie) 
 			throws URISyntaxException {
@@ -52,7 +55,7 @@ public class CatalogController {
 							UUID.randomUUID(), 
 							newMovie.getName(), 
 							newMovie.getType(), 
-							newMovie.getAvailableCopies());
+							newMovie.getAvailableCopiesForRental());
 
 		this.catalogService.createMovie(movie);
 		
@@ -62,7 +65,7 @@ public class CatalogController {
 				.body(movieResource);
 	}
 
-	@ApiOperation(value = "View a list of available movies.", response = ResponseEntity.class)
+	@ApiOperation(value = "Gets a list of available movies.", response = ResponseEntity.class)
 	@GetMapping
 	public ResponseEntity<Resources<Resource<Movie>>> getAllMovies() {
 		return ok(new Resources<Resource<Movie>>(
@@ -70,7 +73,7 @@ public class CatalogController {
 						linkTo(methodOn(CatalogController.class).getAllMovies()).withSelfRel()));
 	}
 
-	@ApiOperation(value = "Search a movie by Id.", response = ResponseEntity.class)
+	@ApiOperation(value = "Find a movie by Id.", response = ResponseEntity.class)
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Resource<Movie>> getMovieById(@PathVariable UUID id) {
 

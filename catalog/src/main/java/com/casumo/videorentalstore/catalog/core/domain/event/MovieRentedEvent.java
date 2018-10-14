@@ -8,15 +8,15 @@ public class MovieRentedEvent extends MovieEvent {
 
 	private final MovieType movieType;
 	private final UUID rentalId;
-	private final int hireDays;
+	private final int numberOfDaysHired;
 	private final int copiesLeftToRent;
 	private final String movieName;
 
-	public MovieRentedEvent(UUID movieId, MovieType movieType, UUID rentalId, int hireDays,
+	public MovieRentedEvent(UUID movieId, MovieType movieType, UUID rentalId, int numberOfDaysHired,
 			int copiesLeftToRent, String movieName) {
 		super(movieId);
 		this.rentalId = rentalId;
-		this.hireDays = hireDays;
+		this.numberOfDaysHired = numberOfDaysHired;
 		this.movieType = movieType;
 		this.copiesLeftToRent = copiesLeftToRent;
 		this.movieName = movieName;
@@ -26,8 +26,8 @@ public class MovieRentedEvent extends MovieEvent {
 		return rentalId;
 	}
 
-	public int getHireDays() {
-		return hireDays;
+	public int getNumberOfDaysHired() {
+		return numberOfDaysHired;
 	}
 
 	public MovieType getMovieType() {

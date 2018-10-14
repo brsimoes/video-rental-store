@@ -32,7 +32,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping(value = "/users", produces = MediaTypes.HAL_JSON_VALUE)
+@RequestMapping(value = "/v1/users", produces = MediaTypes.HAL_JSON_VALUE)
 @Api(value="users", tags="Users", description="Operations to manage users")
 public class UsersController {
 

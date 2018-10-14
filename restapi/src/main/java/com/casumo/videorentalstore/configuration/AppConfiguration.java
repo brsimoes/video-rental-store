@@ -36,7 +36,7 @@ public class AppConfiguration {
 
 	@SuppressWarnings("unchecked")
 	private Predicate<String> paths() {
-		return or(regex("/movies.*"), regex("/rentals.*"), regex("/users.*"));
+		return or(regex("/v1.*"));
 	}
 
 	@Bean

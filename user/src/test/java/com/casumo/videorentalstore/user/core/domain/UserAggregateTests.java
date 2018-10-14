@@ -29,7 +29,7 @@ public class UserAggregateTests {
 		String name = "Bruno";
 		
 		this.userFixture.givenNoPriorActivity()
-						  .when(new CreateUserCommand(userId, name))
+						  .when(new CreateUserCommand(userId, "Dias"))
 						  .expectEvents(new UserCreatedEvent(userId, name));
 	}
 	

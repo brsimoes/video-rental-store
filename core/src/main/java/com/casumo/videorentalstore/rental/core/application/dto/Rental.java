@@ -12,7 +12,7 @@ public final class Rental {
 	private final UUID id;
 	private final UUID userId;
 	private final Collection<RentalItem> rentalItems;
-	private final Collection<Return> returns;
+	private final Collection<ReturnedItem> returns;
 	private final RentalStatus status;
 	private final LocalDate startDate;
 			
@@ -26,7 +26,7 @@ public final class Rental {
 	}
 	
 	public Rental(UUID rentalId, UUID userId, Collection<RentalItem> rentalItems, 
-			Collection<Return> returns, RentalStatus rentalStatus, LocalDate startDate) {
+			Collection<ReturnedItem> returns, RentalStatus rentalStatus, LocalDate startDate) {
 		this.id = rentalId;
 		this.userId = userId;
 		this.rentalItems = rentalItems;
@@ -43,11 +43,11 @@ public final class Rental {
 		return userId;
 	}
 	
-	public void addReturn (Return returnedItem) {
+	public void addReturn (ReturnedItem returnedItem) {
 		this.returns.add(returnedItem);
 	}
 
-	public Collection<Return> getReturns() {
+	public Collection<ReturnedItem> getReturnedItems() {
 		return returns;
 	}
 

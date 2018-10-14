@@ -15,13 +15,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonPatch;
 import javax.validation.Valid;
 
-import org.json.JSONArray;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.MediaType;
@@ -32,12 +31,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.casumo.videorentalstore.rental.core.application.dto.Rental;
 import com.casumo.videorentalstore.rental.core.application.dto.RentalItem;
 import com.casumo.videorentalstore.rental.core.application.dto.ReturnedItem;
+import com.casumo.videorentalstore.rental.core.domain.RentalAggregate.InvalidStatusException;
 import com.casumo.videorentalstore.rental.core.port.RentalService;
 import com.casumo.videorentalstore.rest.rental.util.RentalJsonConverter;
 import com.google.common.collect.Iterables;
@@ -46,7 +45,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping(value = "/rentals")
+@RequestMapping(value = "/v1/rentals", produces = MediaTypes.HAL_JSON_VALUE)
 @Api(value="rentals", tags="Rentals", description="Operations to manage rentals")
 public class RentalsController {
 
@@ -97,34 +96,27 @@ public class RentalsController {
 	}
 
 	@ApiOperation(
-			value = "Update rental properties.",
-			notes="Currently only rental status is allowed to change.",
+			value = "Update rental properties.", 
+			notes = "Currently only rental status is allowed to change.",
 			response = ResponseEntity.class)
-	@PatchMapping(value="{id}", consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Resource<RentalResource>> updateRentalStatus(
-			@PathVariable @Valid UUID id,
-			@RequestBody Map<String, Object>[] patchOperations) {
-		
-		final Optional<Rental> rental = this.rentalService.getRentalById(id);
-		
-		if (rental.isPresent())
-		{
-			JsonArrayBuilder builder = Json.createArrayBuilder();
-			
-			for (Map<String, Object> operation : patchOperations) {
-				builder.add(Json.createObjectBuilder(operation).build());
-			}
-			
-			final JsonPatch patch = Json.createPatch(builder.build());
+	@PatchMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Resource<RentalResource>> updateRentalStatus(@PathVariable @Valid UUID id,
+			@RequestBody Map<String, Object>[] patchOperations) throws InvalidStatusException {
 
+		final JsonPatch patch = toJsonPatch(patchOperations);
+		this.validateAllowedPatchOperations(patchOperations);
+
+		final Optional<Rental> rental = this.rentalService.getRentalById(id);
+
+		if (rental.isPresent()) {
 			final JsonObject result = patch.apply(jsonConverter.toJson(rental.get()));
 
 			Rental patchedRental = jsonConverter.fromJson(result);
-			
-			this.rentalService.updateRental(patchedRental);
-			
+
+			this.rentalService.updateRentalStatus(patchedRental.getId(), patchedRental.getStatus());
+
 			return ok(rentalResourceAssembler.toResource(patchedRental));
-			
+
 		} else {
 			return notFound().build();
 		}
@@ -169,7 +161,7 @@ public class RentalsController {
 				@PathVariable UUID rentalId, 
 				@RequestBody @Valid NewRentalItem newRentalItem) throws URISyntaxException {
 
-		this.rentalService.addMovieToRental(rentalId, newRentalItem.getMovieId(), newRentalItem.getRentlDaysDuration());
+		this.rentalService.addMovieToRental(rentalId, newRentalItem.getMovieId(), newRentalItem.getNumberOfDaysToHire());
 		
 		Optional<RentalItem> createdRentalItem = this.rentalService.getRentalMovie(rentalId, newRentalItem.getMovieId());
 
@@ -183,7 +175,7 @@ public class RentalsController {
 	@PostMapping(value = "/{rentalId}/returns")
 	public ResponseEntity<Resource<ReturnedItem>> returnMovie(
 				@PathVariable UUID rentalId, 
-				@RequestBody @Valid UUID movieId) throws URISyntaxException {
+				@RequestBody UUID movieId) throws URISyntaxException {
 
 		this.rentalService.returnMovie(rentalId, movieId, LocalDate.now(clock));
 		
@@ -195,11 +187,11 @@ public class RentalsController {
 				.body(rentalResource);
 	}
 	
-	@ApiOperation(value="Get details on rented movie.", response = ResponseEntity.class)
-	@PostMapping(value = "/{rentalId}/movies/{movieId}")
+	@ApiOperation(value="Gets details on rented movie.", response = ResponseEntity.class)
+	@GetMapping(value = "/{rentalId}/movies/{movieId}")
 	public ResponseEntity<Resource<RentalItem>> getRentedMovie(
 				@PathVariable UUID rentalId, 
-				@RequestBody @Valid UUID movieId) {
+				@PathVariable UUID movieId) {
 
 		return this.rentalService.getRentalMovie(rentalId, movieId)
 			   	 .map(rentalItemResourceAssembler::toResource)
@@ -210,11 +202,11 @@ public class RentalsController {
 			   	 .orElse(notFound().build());
 	}
 	
-	@ApiOperation(value="Get details on returned movie.", response = ResponseEntity.class)
-	@PostMapping(value = "/{rentalId}/returns/{movieId}")
+	@ApiOperation(value="Gets details on returned movie.", response = ResponseEntity.class)
+	@GetMapping(value = "/{rentalId}/returns/{movieId}")
 	public ResponseEntity<Resource<ReturnedItem>> getReturnedMovie(
 				@PathVariable UUID rentalId, 
-				@RequestBody @Valid UUID movieId) {
+				@PathVariable UUID movieId) {
 
 		return this.rentalService.getReturnMovie(rentalId, movieId)
 			   	 .map(returnItemResourceAssembler::toResource)
@@ -223,5 +215,28 @@ public class RentalsController {
 		   		 	return i;})
 			   	 .map(ResponseEntity::ok)
 			   	 .orElse(notFound().build());
+	}
+
+	private JsonPatch toJsonPatch(Map<String, Object>[] patchOperations) {
+		JsonArrayBuilder builder = Json.createArrayBuilder();
+		
+		for (Map<String, Object> operation : patchOperations) {
+			builder.add(Json.createObjectBuilder(operation).build());
+		}
+		
+		return Json.createPatch(builder.build());
+	}
+	
+	private void validateAllowedPatchOperations(Map<String, Object>[] patchOperations) {
+		for (Map<String, Object> operation : patchOperations) {
+			String path = (String) operation.get("path");
+			String op = (String) operation.get("op");
+			
+			if (!path.equals("/rentalStatus"))
+				throw new InvalidRentalPatch("Only replace rentalStatus is allowed to be performed.");
+			
+			if (!op.equals("/replace"))
+				throw new InvalidRentalPatch("Only replace rentalStatus is allowed to be performed.");
+		}
 	}
 }

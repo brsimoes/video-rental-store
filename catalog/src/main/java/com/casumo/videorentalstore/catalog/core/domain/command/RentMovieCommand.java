@@ -5,19 +5,19 @@ import java.util.UUID;
 public class RentMovieCommand extends MovieCommand {
 
 	private final UUID rentalId;
-	private final int hireDays;
+	private final int numberOfDaysToHire;
 
-	public RentMovieCommand(UUID movieId, UUID rentalId, int hireDays) {
+	public RentMovieCommand(UUID movieId, UUID rentalId, int numberOfDaysToHire) {
 		super(movieId);
 		this.rentalId = rentalId;
-		this.hireDays = hireDays;
+		this.numberOfDaysToHire = numberOfDaysToHire;
 	}
 	
 	public UUID getRentalId() {
 		return rentalId;
 	}
 
-	public int getHireDays() {
-		return hireDays;
+	public int getNumberOfDaysToHire() {
+		return numberOfDaysToHire;
 	}
 }

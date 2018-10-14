@@ -49,7 +49,7 @@ public class MovieAggregate {
 						command.getMovieId(), 
 						this.type, 
 						command.getRentalId(), 
-						command.getHireDays(),
+						command.getNumberOfDaysToHire(),
 						this.availableCopies - this.hireDaysAmmountByRental.size() - 1,
 						this.name));
 		} else {
@@ -95,7 +95,7 @@ public class MovieAggregate {
 
 	@EventSourcingHandler
 	public void on(MovieRentedEvent event) {
-		this.hireDaysAmmountByRental.put(event.getRentalId(), event.getHireDays());
+		this.hireDaysAmmountByRental.put(event.getRentalId(), event.getNumberOfDaysHired());
 	}
 
 	@EventSourcingHandler

@@ -1,12 +1,15 @@
 package com.casumo.videorentalstore.rental.core.domain;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.eventhandling.saga.SagaEventHandler;
+import org.axonframework.eventhandling.saga.SagaLifecycle;
 import org.axonframework.eventhandling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
 import org.slf4j.Logger;
@@ -17,8 +20,10 @@ import com.casumo.videorentalstore.catalog.core.domain.command.CancelMovieRental
 import com.casumo.videorentalstore.catalog.core.domain.event.MovieRentedEvent;
 import com.casumo.videorentalstore.catalog.core.domain.event.MovieReturnedEvent;
 import com.casumo.videorentalstore.rental.core.domain.command.AddRentedMovieCommand;
+import com.casumo.videorentalstore.rental.core.domain.command.ChangeRentalStatusCommand;
 import com.casumo.videorentalstore.rental.core.domain.command.ReturnRentedMovieCommand;
 import com.casumo.videorentalstore.rental.core.domain.event.RentalCreatedEvent;
+import com.casumo.videorentalstore.rental.core.domain.event.RentalStatusChangedEvent;
 import com.casumo.videorentalstore.rental.core.domain.service.BillingService;
 import com.casumo.videorentalstore.rental.core.domain.service.UnknownPriceFormulaForMovieTypeException;
 import com.casumo.videorentalstore.user.core.domain.command.AddBonusPointsCommand;
@@ -31,6 +36,7 @@ public class RentalManagerSaga {
 	private UUID userId;
 	private Map<UUID,Integer> initialHireDaysByMovie;
 	private LocalDate rentalStartDate;
+	private Collection<UUID> moviesToBeReturned;
 
 	@Autowired
 	private transient CommandGateway commandGateway;
@@ -41,6 +47,7 @@ public class RentalManagerSaga {
 	@SagaEventHandler(associationProperty = "rentalId")
 	public void handle(RentalCreatedEvent event) {
 		this.initialHireDaysByMovie = new HashMap<>();
+		this.moviesToBeReturned = new HashSet<>();
 		this.userId = event.getUserId();
 		this.rentalStartDate = event.getStartDate();
 		
@@ -54,22 +61,23 @@ public class RentalManagerSaga {
 		try {
 
 			double movieRentalchargeAmmount = this.billingService.getRentalChargeAmmountFor(event.getMovieType(),
-					event.getHireDays());
+					event.getNumberOfDaysHired());
 
 			this.commandGateway.send(new AddRentedMovieCommand(
 											event.getRentalId(), 
 											event.getMovieId(), 
 											event.getMovieName(), 
 											event.getMovieType(),
-											event.getHireDays(), 
+											event.getNumberOfDaysHired(), 
 											movieRentalchargeAmmount));
 			
-			this.initialHireDaysByMovie.put(event.getMovieId(), event.getHireDays());
+			this.initialHireDaysByMovie.put(event.getMovieId(), event.getNumberOfDaysHired());
+			
+			this.moviesToBeReturned.add(event.getMovieId());
 
 		} catch (UnknownPriceFormulaForMovieTypeException e) {
 
 			this.commandGateway.send(new CancelMovieRentalCommand(event.getMovieId(), event.getRentalId()));
-
 		}
 	}
 
@@ -92,6 +100,8 @@ public class RentalManagerSaga {
 														event.getMovieType(), 
 														this.rentalStartDate,
 														event.getReturnDate());
+			
+			this.moviesToBeReturned.remove(event.getMovieId());
 		
 		} catch (UnknownPriceFormulaForMovieTypeException e) {
 			logger.error("Unable to calculate return surcharge and bonus on rental {} for movie {}.",
@@ -105,5 +115,16 @@ public class RentalManagerSaga {
 											event.getReturnDate()));
 		
 		this.commandGateway.send( new AddBonusPointsCommand ( this.userId, bonusAmmount));
+		
+		if (this.moviesToBeReturned.size() == 0) {
+			this.commandGateway.send( new ChangeRentalStatusCommand(event.getRentalId(), RentalStatus.CLOSED));
+		}
+	}
+	
+	@SagaEventHandler(associationProperty = "rentalId")
+	public void on(RentalStatusChangedEvent  event) {
+		if (event.getNewStatus().isCanceled() || event.getNewStatus().isClosed()  ) {
+			SagaLifecycle.end();
+		}
 	}
 }

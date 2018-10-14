@@ -19,14 +19,8 @@ public enum RentalStatus {
 			return true;
 		}
 	},
-
-	OVERDUE {
-		public boolean isOverdue() {
-			return true;
-		}
-	}, 
 	
-	CANCELED{
+	CANCELED {
 		public boolean isCanceled() {
 			return true;
 		}
@@ -41,10 +35,6 @@ public enum RentalStatus {
 	}
 	
 	public boolean isClosed() {
-		return false;
-	}
-	
-	public boolean isOverdue() {
 		return false;
 	}
 	

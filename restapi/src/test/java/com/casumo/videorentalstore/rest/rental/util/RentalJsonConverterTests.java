@@ -6,10 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.UUID;
-
-import javax.json.JsonObject;
 
 import org.junit.Test;
 

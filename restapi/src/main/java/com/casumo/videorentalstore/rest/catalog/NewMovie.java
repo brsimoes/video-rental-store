@@ -13,7 +13,7 @@ public class NewMovie {
 	@NotNull
 	private MovieType type;
 	@Positive
-	private int availableCopies;
+	private int availableCopiesForRental;
 	
 	public void setName(String name) {
 		this.name = name;
@@ -23,8 +23,8 @@ public class NewMovie {
 		this.type = type;
 	}
 
-	public void setAvailableCopies(int availableCopies) {
-		this.availableCopies = availableCopies;
+	public void setAvailableCopiesForRental(int availableCopies) {
+		this.availableCopiesForRental = availableCopies;
 	}
 
 	public String getName() {
@@ -35,7 +35,7 @@ public class NewMovie {
 		return type;
 	}
 
-	public int getAvailableCopies() {
-		return availableCopies;
+	public int getAvailableCopiesForRental() {
+		return availableCopiesForRental;
 	}
 }
